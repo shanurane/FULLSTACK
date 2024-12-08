@@ -1,4 +1,5 @@
-import { React, useState } from "react";
+import React, { useState } from "react";
+import axios from "axios";
 
 const Footer = () => {
   const [contact, setContact] = useState({
@@ -7,12 +8,16 @@ const Footer = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:5000/subscribers", {
-        email: contact.email,
-      });
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/subscriptions`,
+        {
+          email: contact.email,
+        }
+      );
+      setContact({ email: "" });
 
       // Handle success (e.g., update clients list or show a success message)
-      console.log("contact added:", response.data);
+      //   console.log("contact added:", response.data);
     } catch (error) {
       console.error("Error adding contact:", error);
     }
@@ -45,25 +50,26 @@ const Footer = () => {
           <ul className="flex gap-8 items-center">
             <li className="hover:bg-white/10 rounded-xl p-2">SubscribeUs</li>
             <li className="flex">
-              <form onSubmit={handleSubmit}>
+              <form onSubmit={handleSubmit} className="flex">
                 <input
                   type="email"
                   value={contact.email}
+                  placeholder="Email"
                   onChange={(e) =>
-                    setNewProject({ ...contact, email: e.target.value })
+                    setContact({ ...contact, email: e.target.value })
                   }
                   required
                   className="border-[1.5px] text-white bg-transparent placeholder-white/60 px-2 py-1 rounded-l-md focus:outline-none focus:ring-0"
                 />
+                <div>
+                  <button
+                    type="submit"
+                    className="bg-white border-[1.5px] font-bold text-blue-500 flex justify-center items-center rounded-r-md px-2 py-1"
+                  >
+                    Subscribe
+                  </button>
+                </div>
               </form>
-              <div>
-                <button
-                  type="submit"
-                  className="bg-white border-[1.5px] font-bold text-blue-500 flex justify-center items-center rounded-r-md px-2 py-1"
-                >
-                  Subscribe
-                </button>
-              </div>
             </li>
           </ul>
         </div>

@@ -42,7 +42,7 @@ const subscriptionSchema = new mongoose.Schema({
 const Project = mongoose.model("Projects", projectSchema);
 const Client = mongoose.model("Clients", clientSchema);
 const Contact = mongoose.model("Contacts", contactSchema);
-const Subscription = mongoose.model("Subscribers", subscriptionSchema);
+const Subscription = mongoose.model("Subscriptions", subscriptionSchema);
 
 // API Routes
 app.get("/projects", async (req, res) => {
@@ -51,7 +51,6 @@ app.get("/projects", async (req, res) => {
 });
 
 app.get("/clients", async (req, res) => {
-  console.log("chala");
   const clients = await Client.find();
   res.json(clients);
 });
@@ -61,9 +60,9 @@ app.get("/contacts", async (req, res) => {
   res.json(contacts);
 });
 
-app.get("/subscribers", async (req, res) => {
-  const subscribers = await Subscription.find();
-  res.json(subscribers);
+app.get("/subscriptions", async (req, res) => {
+  const subscriptions = await Subscription.find();
+  res.json(subscriptions);
 });
 
 app.post("/clients", async (req, res) => {
@@ -146,7 +145,7 @@ app.post("/contacts", async (req, res) => {
   }
 });
 
-app.post("/subscribers", async (req, res) => {
+app.post("/subscriptions", async (req, res) => {
   try {
     const { email } = req.body;
 
@@ -156,11 +155,11 @@ app.post("/subscribers", async (req, res) => {
         .json({ error: "Name, description, and designation are required." });
     }
 
-    const newSubscriber = new Subscription({
+    const newSubscription = new Subscription({
       email,
     });
 
-    const savedSubscriber = await newSubscriber.save();
+    const savedSubscriber = await newSubscription.save();
     res.status(201).json(savedSubscriber);
   } catch (error) {
     console.error("Error adding client:", error.message);

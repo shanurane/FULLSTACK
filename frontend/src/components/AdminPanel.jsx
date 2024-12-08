@@ -8,42 +8,34 @@ const AdminPanel = () => {
   const [subscriptions, setSubscriptions] = useState([]);
   const [images, setImages] = useState("");
   const [url, setUrl] = useState("");
+  const [error, setError] = useState("");
 
   const [newProject, setNewProject] = useState({
     name: "",
     description: "",
-    image: "",
   });
   const [newClient, setNewClient] = useState({
     name: "",
     description: "",
     designation: "",
-    image: "",
   });
+  const uploadImage = async () => {
+    const formData = new FormData();
+    formData.append("file", images);
+    formData.append("upload_preset", "preset1");
 
-  // Fetch Data
-  // useEffect(() => {
-  //   axios
-  //     .get("URL/projects")
-  //     .then((res) => setProjects(res.data))
-  //     .catch((error) => console.log(error));
-  //   axios
-  //     .get("URL/clients")
-  //     .then((res) => setClients(res.data));
-  //   axios
-  //     .get("URL/contacts")
-  //     .then((res) => setContacts(res.data));
-  //   axios
-  //     .get("URL/subscribers")
-  //     .then((res) => setSubscriptions(res.data));
-  // }, []);
-
-  // Handle File Input
-  const handleFileChange = (e, setFunc) => {
-    const file = e.target.files[0]; // Get the file from the input
-    console.log("Selected File:", file);
-    setFunc((prev) => ({ ...prev, image: e.target.files[0] }));
+    try {
+      const res = await axios.post(
+        "https://api.cloudinary.com/v1_1/dnnnfrto3/image/upload",
+        formData
+      );
+      return res.data.secure_url;
+    } catch (error) {
+      console.error("Image upload failed:", error);
+      throw new Error("Image upload failed");
+    }
   };
+
   // Add Project
   const handleSubmitProject = async (e) => {
     e.preventDefault();
@@ -51,23 +43,25 @@ const AdminPanel = () => {
     const formData = new FormData();
     formData.append("file", images);
     formData.append("upload_preset", "preset1");
-    await axios
-      .post("https://api.cloudinary.com/v1_1/dnnnfrto3/image/upload", formData)
-      .then((res) => setUrl(res.data.secure_url))
-      .catch((error) => console.log(error));
-
-    console.log(url);
 
     try {
-      const response = await axios.post("URL/projects", {
-        name: newProject.name,
-        description: newProject.description,
-        image: url,
+      const imageUrl = await uploadImage();
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/projects`,
+        {
+          name: newProject.name,
+          description: newProject.description,
+          image: imageUrl,
+        }
+      );
+      setNewProject({
+        name: "",
+        description: "",
       });
-
       // Handle success (e.g., update clients list or show a success message)
       console.log("Client added:", response.data);
     } catch (error) {
+      setError("Image upload failed. Please try again.");
       console.error("Error adding client:", error);
     }
   };
@@ -79,123 +73,146 @@ const AdminPanel = () => {
     const formData = new FormData();
     formData.append("file", images);
     formData.append("upload_preset", "preset1");
-    await axios
-      .post("https://api.cloudinary.com/v1_1/dnnnfrto3/image/upload", formData)
-      .then((res) => setUrl(res.data.secure_url))
-      .catch((error) => console.log(error));
-
-    console.log(url);
 
     try {
-      const response = await axios.post("URL/clients", {
-        name: newClient.name,
-        description: newClient.description,
-        designation: newClient.designation,
-        image: url,
+      const imageUrl = await uploadImage();
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/clients`,
+        {
+          name: newClient.name,
+          description: newClient.description,
+          designation: newClient.designation,
+          image: imageUrl,
+        }
+      );
+      setNewClient({
+        name: "",
+        description: "",
+        designation: "",
       });
-
-      console.log("Client added:", response.data);
+      // console.log("Client added:", response.data);
     } catch (error) {
+      setError("Image upload failed. Please try again.");
       console.error("Error adding client:", error);
     }
   };
 
+  useEffect(() => {
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/contacts`)
+      .then((res) => setContacts(res.data));
+    axios
+      .get(`${import.meta.env.VITE_API_URL}/subscriptions`)
+      .then((res) => setSubscriptions(res.data));
+  }, []);
+
   return (
-    <div className="text-center">
-      <h1 className="text-3xl font bold">Admin Panel</h1>
+    <div className="text-center p-3">
+      <h1 className="text-4xl text-sky-500 font-bold">Admin Panel</h1>
+      <div className="flex">
+        <div className="w-1/2 p-5">
+          <h2 className="text-2xl font-bold">Project Management</h2>
+          <form
+            onSubmit={handleSubmitProject}
+            className="bg-sky-400 flex flex-col gap-3 rounded-md p-6"
+          >
+            <input
+              type="text"
+              placeholder="name"
+              value={newProject.name}
+              onChange={(e) =>
+                setNewProject({ ...newProject, name: e.target.value })
+              }
+              required
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={newProject.description}
+              onChange={(e) =>
+                setNewProject({ ...newProject, description: e.target.value })
+              }
+              required
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <input
+              type="file"
+              onChange={(e) => setImages(e.target.files[0])}
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <h1>File size should be less than 1MB</h1>
+            <button
+              type="submit"
+              className="p-1 border bg-orange-500 rounded-md text-black "
+            >
+              Add Project
+            </button>
+          </form>
+        </div>
+        <div className="w-1/2 p-5">
+          <h1 className="font-bold text-2xl">Client management</h1>
+          <form
+            onSubmit={handleSubmit}
+            className="bg-sky-400 flex flex-col gap-3 rounded-md p-6"
+          >
+            <input
+              type="text"
+              placeholder="Name"
+              value={newClient.name}
+              onChange={(e) =>
+                setNewClient({ ...newClient, name: e.target.value })
+              }
+              required
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <input
+              type="text"
+              placeholder="Description"
+              value={newClient.description}
+              onChange={(e) =>
+                setNewClient({ ...newClient, description: e.target.value })
+              }
+              required
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <input
+              type="text"
+              placeholder="Designation"
+              value={newClient.designation}
+              onChange={(e) =>
+                setNewClient({ ...newClient, designation: e.target.value })
+              }
+              required
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <input
+              type="file"
+              onChange={(e) => setImages(e.target.files[0])}
+              className="p-1 border bg-transparent rounded-md text-black placeholder-zinc-600"
+            />
+            <h1>File size should be less than 1MB</h1>
 
-      <h2 className="text-2xl font-bold">Project Management</h2>
-      <form
-        onSubmit={handleSubmitProject}
-        className="bg-sky-400 flex flex-col gap-3 rounded-md p-6"
-      >
-        <input
-          type="text"
-          placeholder="Pname"
-          value={newProject.name}
-          onChange={(e) =>
-            setNewProject({ ...newProject, name: e.target.value })
-          }
-          required
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={newProject.description}
-          onChange={(e) =>
-            setNewProject({ ...newClient, description: e.target.value })
-          }
-          required
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <input
-          type="file"
-          onChange={(e) => setImages(e.target.files[0])}
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <button
-          type="submit"
-          className="p-1 border bg-orange-500 rounded-md text-black "
-        >
-          Add Project
-        </button>
-      </form>
-      <h1 className="font-bold text-2xl">Client management</h1>
-      <form
-        onSubmit={handleSubmit}
-        className="bg-sky-400 flex flex-col gap-3 rounded-md p-6"
-      >
-        <input
-          type="text"
-          placeholder="Name"
-          value={newClient.name}
-          onChange={(e) => setNewClient({ ...newClient, name: e.target.value })}
-          required
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <input
-          type="text"
-          placeholder="Description"
-          value={newClient.description}
-          onChange={(e) =>
-            setNewClient({ ...newClient, description: e.target.value })
-          }
-          required
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <input
-          type="text"
-          placeholder="Designation"
-          value={newClient.designation}
-          onChange={(e) =>
-            setNewClient({ ...newClient, designation: e.target.value })
-          }
-          required
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <input
-          type="file"
-          onChange={(e) => setImages(e.target.files[0])}
-          className="p-1 border bg-transparent rounded-md text-black placeholder-black"
-        />
-        <button
-          type="submit"
-          className="p-1 border bg-orange-500 rounded-md text-black "
-        >
-          Add Client
-        </button>
-      </form>
-
+            <button
+              type="submit"
+              className="p-1 border bg-orange-500 rounded-md text-black"
+            >
+              Add Client
+            </button>
+          </form>
+        </div>
+      </div>
       <section>
         <h1 className="font-bold text-2xl">Contact Form Details</h1>
-        <div className="bg-sky-400 flex flex-col gap-3 rounded-md p-6">
+        <div className="bg-sky-400 flex flex-col gap-3 rounded-md p-2">
           {contacts.map((contact) => (
-            <div key={contact._id}>
-              <p>{contact.name}</p>
-              <p>{contact.email}</p>
-              <p>{contact.phone}</p>
-              <p>{contact.city}</p>
+            <div key={contact._id} className="bg-white/20 rounded-lg w-fit p-2">
+              <div>
+                <p>{contact.name}</p>
+                <p>{contact.email}</p>
+                <p>{contact.phone}</p>
+                <p>{contact.city}</p>
+              </div>
             </div>
           ))}
         </div>
@@ -203,9 +220,14 @@ const AdminPanel = () => {
 
       <section>
         <h2 className="font-bold text-2xl">Subscribed Emails</h2>
-        <div className="bg-sky-400 flex flex-col gap-3 rounded-md p-6">
+        <div className="grid grid-cols-3  bg-sky-400 gap-3 rounded-md p-6 overflow-hidden">
           {subscriptions.map((subscription) => (
-            <div key={subscription._id}>{subscription.email}</div>
+            <div
+              key={subscription._id}
+              className="bg-white/20 rounded-lg w-fit p-2"
+            >
+              {subscription.email}
+            </div>
           ))}
         </div>
       </section>

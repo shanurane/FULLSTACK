@@ -1,4 +1,5 @@
 import { React, useState, useEffect } from "react";
+import axios from "axios";
 
 const Consultation = () => {
   const [contact, setContact] = useState({
@@ -10,15 +11,23 @@ const Consultation = () => {
   const handleContactSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("URL/contact", {
-        name: contact.name,
-        email: contact.email,
-        phone: contact.phone,
-        city: contact.city,
+      const response = await axios.post(
+        `${import.meta.env.VITE_API_URL}/contacts`,
+        {
+          name: contact.name,
+          email: contact.email,
+          phone: contact.phone,
+          city: contact.city,
+        }
+      );
+      setContact({
+        name: "",
+        email: "",
+        phone: "",
+        city: "",
       });
-
       // Handle success (e.g., update clients list or show a success message)
-      console.log("contact added:", response.data);
+      // console.log("contact added:", response.data);
     } catch (error) {
       console.error("Error adding contact:", error);
     }
@@ -48,9 +57,8 @@ const Consultation = () => {
               type="text"
               name="name"
               value={contact.name}
-              onChange={(e) =>
-                setNewProject({ ...contact, name: e.target.value })
-              }
+              placeholder="Name"
+              onChange={(e) => setContact({ ...contact, name: e.target.value })}
               className="w-full border-[1.2px] text-white bg-transparent placeholder-white/60 p-1 rounded-md focus:outline-none focus:ring-0"
               required
             />
@@ -60,8 +68,9 @@ const Consultation = () => {
               type="email"
               name="email"
               value={contact.email}
+              placeholder="Email"
               onChange={(e) =>
-                setNewProject({ ...contact, email: e.target.value })
+                setContact({ ...contact, email: e.target.value })
               }
               className="w-full border-[1.2px] text-white bg-transparent placeholder-white/60 p-1 rounded-md focus:outline-none focus:ring-0"
               required
@@ -72,8 +81,9 @@ const Consultation = () => {
               type="text"
               name="phone"
               value={contact.phone}
+              placeholder="Phone"
               onChange={(e) =>
-                setNewProject({ ...contact, phone: e.target.value })
+                setContact({ ...contact, phone: e.target.value })
               }
               className="w-full border-[1.2px] text-white bg-transparent placeholder-white/60 p-1 rounded-md focus:outline-none focus:ring-0"
               required
@@ -84,9 +94,8 @@ const Consultation = () => {
               type="text"
               name="city"
               value={contact.city}
-              onChange={(e) =>
-                setNewProject({ ...contact, city: e.target.value })
-              }
+              placeholder="City"
+              onChange={(e) => setContact({ ...contact, city: e.target.value })}
               className="w-full border-[1.2px] text-white bg-transparent placeholder-white/60 p-1 rounded-md focus:outline-none focus:ring-0"
               required
             />
