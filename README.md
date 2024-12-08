@@ -58,7 +58,7 @@ If you're using yarn:
 yarn dev
 ```
 
-The app will be running at http://localhost:5173.
+The app is running at https://fullstack-nine-delta.vercel.app/.
 
 ##Usage
 Once the app is running, you can access the admin panel to add projects, clients, and manage contact submissions. The project also includes a front-facing landing page that displays projects and client testimonials.
